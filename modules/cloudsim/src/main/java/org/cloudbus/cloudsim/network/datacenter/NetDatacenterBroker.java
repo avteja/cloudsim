@@ -322,7 +322,7 @@ public class NetDatacenterBroker extends SimEntity {
 		}
 
 		// generate Application execution Requests
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 1; i++) {
 			this.getAppCloudletList().add(
 					new WorkflowApp(AppCloudlet.APP_Workflow, NetworkConstants.currentAppId, 0, 0, getId()));
 			NetworkConstants.currentAppId++;

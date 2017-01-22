@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.CloudSimTags;
+import org.cloudbus.cloudsim.core.PrintFile;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 
@@ -58,7 +59,9 @@ public class Datacenter extends SimEntity {
 
 	/** The scheduling delay to process each datacenter received event. */
 	private double schedulingInterval;
-
+	
+	private Map<Vm, Double> vmCreateTimeMap;
+	
 	/**
 	 * Allocates a new Datacenter object.
 	 * 
@@ -94,6 +97,7 @@ public class Datacenter extends SimEntity {
 		setStorageList(storageList);
 		setVmList(new ArrayList<Vm>());
 		setSchedulingInterval(schedulingInterval);
+		vmCreateTimeMap = new HashMap<Vm, Double>();
 
 		for (Host host : getCharacteristics().getHostList()) {
 			host.setDatacenter(this);
@@ -125,7 +129,7 @@ public class Datacenter extends SimEntity {
 	@Override
 	public void processEvent(SimEvent ev) {
 		int srcId = -1;
-
+//		captureCurrentState(CloudSim.clock());
 		switch (ev.getTag()) {
 		// Resource characteristics inquiry
 			case CloudSimTags.RESOURCE_CHARACTERISTICS:
@@ -249,6 +253,8 @@ public class Datacenter extends SimEntity {
 				break;
 
 			case CloudSimTags.VM_DATACENTER_EVENT:
+				if ((Cloudlet)ev.getData() != null)
+					PrintFile.AddtoFile("Cloudlet is: " + ((Cloudlet)ev.getData()).toString());
 				updateCloudletProcessing();
 				checkCloudletCompletion();
 				break;
@@ -446,13 +452,17 @@ public class Datacenter extends SimEntity {
 			int[] data = new int[3];
 			data[0] = getId();
 			data[1] = vm.getId();
-
 			if (result) {
 				data[2] = CloudSimTags.TRUE;
 			} else {
 				data[2] = CloudSimTags.FALSE;
 			}
-			send(vm.getUserId(), CloudSim.getMinTimeBetweenEvents(), CloudSimTags.VM_CREATE_ACK, data);
+			Double delay = vmCreateTimeMap.get(vm);
+			if (delay == null) {
+				send(vm.getUserId(), CloudSim.getMinTimeBetweenEvents(), CloudSimTags.VM_CREATE_ACK, data);
+			} else {
+				send(vm.getUserId(), delay+CloudSim.getMinTimeBetweenEvents(), CloudSimTags.VM_CREATE_ACK, data);
+			}
 		}
 
 		if (result) {
@@ -726,6 +736,8 @@ public class Datacenter extends SimEntity {
 					int tag = CloudSimTags.CLOUDLET_SUBMIT_ACK;
 					sendNow(cl.getUserId(), tag, data);
 				}
+				
+				PrintFile.AddtoFile("Cloudlet Return SEND for cloudlet: " + cl.toString() + "\n");
 
 				sendNow(cl.getUserId(), CloudSimTags.CLOUDLET_RETURN, cl);
 
@@ -751,7 +763,8 @@ public class Datacenter extends SimEntity {
 			// if this cloudlet is in the exec queue
 			if (estimatedFinishTime > 0.0 && !Double.isInfinite(estimatedFinishTime)) {
 				estimatedFinishTime += fileTransferTime;
-				send(getId(), estimatedFinishTime, CloudSimTags.VM_DATACENTER_EVENT);
+				PrintFile.AddtoFile("Cloudlet VM_DC_EV SEND for cloudlet: " + cl.toString() + "\n");
+				send(getId(), estimatedFinishTime, CloudSimTags.VM_DATACENTER_EVENT, cl);
 			}
 
 			if (ack) {
@@ -761,6 +774,7 @@ public class Datacenter extends SimEntity {
 				data[2] = CloudSimTags.TRUE;
 
 				// unique tag = operation tag
+				PrintFile.AddtoFile("Cloudlet Submit_Ack SEND for cloudlet: " + cl.toString() + "\n");
 				int tag = CloudSimTags.CLOUDLET_SUBMIT_ACK;
 				sendNow(cl.getUserId(), tag, data);
 			}
@@ -911,6 +925,7 @@ public class Datacenter extends SimEntity {
 				smallerTime = CloudSim.clock() + CloudSim.getMinTimeBetweenEvents() + 0.01;
 			}
 			if (smallerTime != Double.MAX_VALUE) {
+				PrintFile.AddtoFile("Cloudlet VM_DC_EV SEND for cloudlet: " + "\n");
 				schedule(getId(), (smallerTime - CloudSim.clock()), CloudSimTags.VM_DATACENTER_EVENT);
 			}
 			setLastProcessTime(CloudSim.clock());
@@ -932,6 +947,7 @@ public class Datacenter extends SimEntity {
 				while (vm.getCloudletScheduler().isFinishedCloudlets()) {
 					Cloudlet cl = vm.getCloudletScheduler().getNextFinishedCloudlet();
 					if (cl != null) {
+						PrintFile.AddtoFile("Cloudlet Return for cloudlet: " + cl.toString() + "\n");
 						sendNow(cl.getUserId(), CloudSimTags.CLOUDLET_RETURN, cl);
 					}
 				}
@@ -1196,6 +1212,19 @@ public class Datacenter extends SimEntity {
 	 */
 	protected void setSchedulingInterval(double schedulingInterval) {
 		this.schedulingInterval = schedulingInterval;
+	}
+	
+	public void setVmCreateTimeMap(Map<Vm, Double> vmCreateTimeMap) {
+		this.vmCreateTimeMap = vmCreateTimeMap;
+	}
+	
+	public void captureCurrentState(double time) {
+		for (Vm vm: vmList) {
+			vm.storeCurrentState(time);
+		}
+		for (Host host: getCharacteristics().getHostList()) {
+			host.storeCurrentState(time);
+		}
 	}
 
 }

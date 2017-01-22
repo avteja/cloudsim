@@ -8,8 +8,10 @@
 package org.cloudbus.cloudsim;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a Virtual Machine (VM) that runs inside a Host, sharing a hostList with other VMs. It processes
@@ -82,6 +84,8 @@ public class Vm {
          * to find the desired entry.
          */
 	private final List<VmStateHistoryEntry> stateHistory = new LinkedList<VmStateHistoryEntry>();
+	
+	private Map<Double, FullVmStateHistoryEntry> fullStateHistory;
 
 	/**
 	 * Creates a new Vm object.
@@ -134,6 +138,7 @@ public class Vm {
 		setCurrentAllocatedMips(null);
 		setCurrentAllocatedRam(0);
 		setCurrentAllocatedSize(0);
+		fullStateHistory = new HashMap<Double, FullVmStateHistoryEntry>();
 	}
 
 	/**
@@ -614,5 +619,22 @@ public class Vm {
 		}
 		getStateHistory().add(newState);
 	}
+	
+	public Map<Double, FullVmStateHistoryEntry> getFullVmStateHistory() {
+		return fullStateHistory;
+	}
 
+	public void storeCurrentState(double time) {
+		double totalAllocatedMips = 0.0;
+		double totalRequestedMips = 0.0;
+		for (double mips: getCurrentAllocatedMips()) {
+			totalAllocatedMips += mips;
+		}
+		for (double mips: getCurrentRequestedMips()) {
+			totalRequestedMips += mips;
+		}
+		FullVmStateHistoryEntry stateHistory = new 
+				FullVmStateHistoryEntry(time, totalAllocatedMips, totalRequestedMips, isInMigration());
+		fullStateHistory.put(time, stateHistory);
+	}
 }

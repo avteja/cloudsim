@@ -8,7 +8,10 @@
 package org.cloudbus.cloudsim;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.lists.PeList;
@@ -57,6 +60,10 @@ public class Host {
 
 	/** The datacenter where the host is placed. */
 	private Datacenter datacenter;
+	
+	private final List<HostStateHistoryEntry> stateHistory = new LinkedList<HostStateHistoryEntry>();
+	
+	private Map<Double, FullHostStateHistoryEntry> fullStateHistory;
 
 	/**
 	 * Instantiates a new host.
@@ -83,6 +90,8 @@ public class Host {
 
 		setPeList(peList);
 		setFailed(false);
+		
+		fullStateHistory = new HashMap<Double, FullHostStateHistoryEntry>();
 	}
 
 	/**
@@ -628,6 +637,61 @@ public class Host {
 	 */
 	public void setDatacenter(Datacenter datacenter) {
 		this.datacenter = datacenter;
+	}
+	
+	/**
+	 * Gets the state history.
+	 * 
+	 * @return the state history
+	 */
+	public List<HostStateHistoryEntry> getStateHistory() {
+		return stateHistory;
+	}
+	
+	/**
+	 * Adds a Host state history entry.
+	 * 
+	 * @param time the time
+	 * @param allocatedMips the allocated mips
+	 * @param requestedMips the requested mips
+	 * @param isActive is Host Active
+	 */
+	public void addStateHistoryEntry(
+			double time,
+			double allocatedMips,
+			double requestedMips,
+			boolean isActive) {
+		HostStateHistoryEntry newState = new HostStateHistoryEntry(
+				time,
+				allocatedMips,
+				requestedMips,
+				isActive);
+		if (!getStateHistory().isEmpty()) {
+			HostStateHistoryEntry previousState = getStateHistory().get(getStateHistory().size() - 1);
+			if (previousState.getTime() == time) {
+				getStateHistory().set(getStateHistory().size() - 1, newState);
+				return;
+			}
+		}
+		getStateHistory().add(newState);
+	}
+	
+	public Map<Double, FullHostStateHistoryEntry> getFullVmStateHistory() {
+		return fullStateHistory;
+	}
+
+	public void storeCurrentState(double time) {
+		double totalAllocatedMips = 0.0;
+		double totalRequestedMips = 0.0;
+		for (Vm vm: vmList) {
+			totalAllocatedMips += getTotalAllocatedMipsForVm(vm);
+		}
+		for (Vm vm: vmList) {
+			totalRequestedMips += getTotalAllocatedMipsForVm(vm);
+		}
+		FullHostStateHistoryEntry stateHistory = new 
+				FullHostStateHistoryEntry(time, totalAllocatedMips, totalRequestedMips, true);
+		fullStateHistory.put(time, stateHistory);
 	}
 
 }

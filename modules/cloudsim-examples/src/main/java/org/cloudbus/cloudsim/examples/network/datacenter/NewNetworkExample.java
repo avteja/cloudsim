@@ -39,7 +39,7 @@ public class NewNetworkExample {
 	 */
 	public static void main(String[] args) {
 
-		Log.printLine("Starting CloudSimExample1...");
+		Log.printLine("Starting NewNetworkExample1...");
 
 		try {
 			int num_user = 1; // number of cloud users

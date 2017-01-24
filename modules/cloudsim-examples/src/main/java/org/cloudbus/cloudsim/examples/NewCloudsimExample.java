@@ -108,8 +108,8 @@ public class NewCloudsimExample {
 			vmCreateTimeMap.put(vm1, 0.0);
 			vmCreateTimeMap.put(vm2, 10.0);
 			
-			datacenter0.setVmCreateTimeMap(vmCreateTimeMap);
-
+			broker.setVmCreateTimeMap(vmCreateTimeMap);
+			
 			//submit vm list to the broker
 			broker.submitVmList(vmlist);
 
@@ -148,8 +148,7 @@ public class NewCloudsimExample {
 			//submit cloudlet list to the broker
 			broker.submitCloudletList(cloudletList);
 			broker.setCloudletSubmitTimeMap(cloudletSubmitTimeMap);
-
-
+			
 			//bind the cloudlets to the vms. This way, the broker
 			// will submit the bound cloudlets only to the specific VM
 			broker.bindCloudletToVm(cloudlet1.getCloudletId(),vm1.getId());

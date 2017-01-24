@@ -60,8 +60,6 @@ public class Datacenter extends SimEntity {
 	/** The scheduling delay to process each datacenter received event. */
 	private double schedulingInterval;
 	
-	private Map<Vm, Double> vmCreateTimeMap;
-	
 	/**
 	 * Allocates a new Datacenter object.
 	 * 
@@ -97,7 +95,6 @@ public class Datacenter extends SimEntity {
 		setStorageList(storageList);
 		setVmList(new ArrayList<Vm>());
 		setSchedulingInterval(schedulingInterval);
-		vmCreateTimeMap = new HashMap<Vm, Double>();
 
 		for (Host host : getCharacteristics().getHostList()) {
 			host.setDatacenter(this);
@@ -460,12 +457,7 @@ public class Datacenter extends SimEntity {
 			} else {
 				data[2] = CloudSimTags.FALSE;
 			}
-			Double delay = vmCreateTimeMap.get(vm);
-			if (delay == null) {
-				send(vm.getUserId(), CloudSim.getMinTimeBetweenEvents(), CloudSimTags.VM_CREATE_ACK, data);
-			} else {
-				send(vm.getUserId(), delay+CloudSim.getMinTimeBetweenEvents(), CloudSimTags.VM_CREATE_ACK, data);
-			}
+			send(vm.getUserId(), CloudSim.getMinTimeBetweenEvents(), CloudSimTags.VM_CREATE_ACK, data);
 		}
 
 		if (result) {
@@ -1216,11 +1208,7 @@ public class Datacenter extends SimEntity {
 	protected void setSchedulingInterval(double schedulingInterval) {
 		this.schedulingInterval = schedulingInterval;
 	}
-	
-	public void setVmCreateTimeMap(Map<Vm, Double> vmCreateTimeMap) {
-		this.vmCreateTimeMap = vmCreateTimeMap;
-	}
-	
+		
 	public void captureCurrentState(double time) {
 		for (Vm vm: vmList) {
 			vm.storeCurrentState(time);

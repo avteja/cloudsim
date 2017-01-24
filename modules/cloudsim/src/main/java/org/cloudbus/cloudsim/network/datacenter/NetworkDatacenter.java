@@ -125,6 +125,13 @@ public class NetworkDatacenter extends Datacenter {
 		return edgeswitch;
 
 	}
+	
+	protected void processVmCreate(SimEvent ev, boolean ack) {
+		super.processVmCreate(ev, ack);
+		Vm vm = (Vm) ev.getData();
+		processVmCreateNetwork(vm);
+
+	}
 
 	/**
 	 * Creates the given VM within the NetworkDatacenter. 
@@ -135,17 +142,16 @@ public class NetworkDatacenter extends Datacenter {
 	 */
 	public boolean processVmCreateNetwork(Vm vm) {
 
-		boolean result = getVmAllocationPolicy().allocateHostForVm(vm);
-
+		boolean result = (vm.getHost() != null);
 		if (result) {
 			VmToSwitchid.put(vm.getId(), ((NetworkHost) vm.getHost()).sw.getId());
 			VmtoHostlist.put(vm.getId(), vm.getHost().getId());
-			System.out.println(vm.getId() + " VM is created on " + vm.getHost().getId());
+			System.out.println(vm.getId() + " VM's network is created on host " + vm.getHost().getId());
 
-			getVmList().add(vm);
+//			getVmList().add(vm);
 
-			vm.updateVmProcessing(CloudSim.clock(), getVmAllocationPolicy().getHost(vm).getVmScheduler()
-					.getAllocatedMipsForVm(vm));
+//			vm.updateVmProcessing(CloudSim.clock(), getVmAllocationPolicy().getHost(vm).getVmScheduler()
+//					.getAllocatedMipsForVm(vm));
 		}
 		return result;
 	}

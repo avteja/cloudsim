@@ -23,6 +23,7 @@ import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 import org.cloudbus.cloudsim.distributions.UniformDistr;
+import org.cloudbus.cloudsim.lists.CloudletList;
 import org.cloudbus.cloudsim.lists.VmList;
 
 /**
@@ -98,7 +99,7 @@ public class NetDatacenterBroker extends SimEntity {
 	/*
 	 * This map contains the user set cloud submit times for each cloudlet.
 	 */
-	protected Map<Cloudlet, Double> cloudletSubmitTimeMap;
+	protected Map<NetworkCloudlet, Double> cloudletSubmitTimeMap;
 
 	public static NetworkDatacenter linkDC;
 
@@ -136,7 +137,7 @@ public class NetDatacenterBroker extends SimEntity {
 		setDatacenterRequestedIdsList(new ArrayList<Integer>());
 		setVmsToDatacentersMap(new HashMap<Integer, Integer>());
 		setDatacenterCharacteristicsList(new HashMap<Integer, DatacenterCharacteristics>());
-
+		setCloudletSubmitTimeMap(new HashMap<NetworkCloudlet, Double>());
 	}
 
 	/**
@@ -166,6 +167,10 @@ public class NetDatacenterBroker extends SimEntity {
 
 	public static void setLinkDC(NetworkDatacenter alinkDC) {
 		linkDC = alinkDC;
+	}
+	
+	public void bindCloudletToVm(int cloudletId, int vmId) {
+		CloudletList.getById(getCloudletList(), cloudletId).setVmId(vmId);
 	}
 
 	/**
@@ -229,6 +234,7 @@ public class NetDatacenterBroker extends SimEntity {
 			setDatacenterRequestedIdsList(new ArrayList<Integer>());
 			// TODO-vinay: Why is this being called? This should be part of example 
 //			createVmsInDatacenterBase(getDatacenterIdsList().get(0));
+			createVmsInDatacenter(getDatacenterIdsList().get(0));
 		}
 	}
 
@@ -831,7 +837,7 @@ public class NetDatacenterBroker extends SimEntity {
 		this.datacenterRequestedIdsList = datacenterRequestedIdsList;
 	}
 	
-	public void setCloudletSubmitTimeMap(Map<Cloudlet, Double> cloudletSubmitTimeMap) {
+	public void setCloudletSubmitTimeMap(Map<NetworkCloudlet, Double> cloudletSubmitTimeMap) {
 		this.cloudletSubmitTimeMap = cloudletSubmitTimeMap;
 	}
 

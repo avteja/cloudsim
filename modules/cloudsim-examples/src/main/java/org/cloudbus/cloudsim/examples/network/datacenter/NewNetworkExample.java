@@ -4,19 +4,28 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.cloudbus.cloudsim.Cloudlet;
+import org.cloudbus.cloudsim.CloudletSchedulerSpaceShared;
+import org.cloudbus.cloudsim.CloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.DatacenterCharacteristics;
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Pe;
 import org.cloudbus.cloudsim.Storage;
+import org.cloudbus.cloudsim.UtilizationModel;
+import org.cloudbus.cloudsim.UtilizationModelFull;
+import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.network.datacenter.EdgeSwitch;
 import org.cloudbus.cloudsim.network.datacenter.NetDatacenterBroker;
+import org.cloudbus.cloudsim.network.datacenter.NetworkCloudlet;
+import org.cloudbus.cloudsim.network.datacenter.NetworkCloudletSpaceSharedScheduler;
 import org.cloudbus.cloudsim.network.datacenter.NetworkConstants;
 import org.cloudbus.cloudsim.network.datacenter.NetworkDatacenter;
 import org.cloudbus.cloudsim.network.datacenter.NetworkHost;
@@ -27,6 +36,9 @@ import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 
 public class NewNetworkExample {
+	
+	/** The cloudlet list. */
+	private static List<NetworkCloudlet> cloudletList;
 
 	/** The vmlist. */
 	private static List<NetworkVm> vmlist;
@@ -59,12 +71,89 @@ public class NewNetworkExample {
 			broker.setLinkDC(datacenter0);
 			// broker.setLinkDC(datacenter0);
 			// Fifth step: Create one Cloudlet
+			
+			int brokerId = broker.getId();
 
 			vmlist = new ArrayList<NetworkVm>();
+			
+			//VM description
+			int vmid = 0;
+			int mips = 1;
+			long size = 10000; //image size (MB)
+			int ram = 512; //vm memory (MB)
+			long bw = 1000;
+			int pesNumber = 2; //number of cpus
+			String vmm = "Xen"; //VMM name
+
+			//create two VMs
+			NetworkVm vm1 = new NetworkVm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new NetworkCloudletSpaceSharedScheduler());
+
+			//the second VM will have twice the priority of VM1 and so will receive twice CPU time
+			vmid++;
+			NetworkVm vm2 = new NetworkVm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new NetworkCloudletSpaceSharedScheduler());
+
+			vmid++;
+			NetworkVm vm3 = new NetworkVm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new NetworkCloudletSpaceSharedScheduler());
+
+			//add the VMs to the vmList
+			vmlist.add(vm1);
+			vmlist.add(vm2);
+			vmlist.add(vm3);
+			
+			Map<Vm, Double> vmCreateTimeMap = new HashMap<Vm, Double>();
+			vmCreateTimeMap.put(vm1, 0.0);
+			vmCreateTimeMap.put(vm2, 10.0);
+			vmCreateTimeMap.put(vm3, 20.0);
+			
+			datacenter0.setVmCreateTimeMap(vmCreateTimeMap);
 
 			// submit vm list to the broker
 
 			broker.submitVmList(vmlist);
+			
+			//Fifth step: Create two Cloudlets
+//			cloudletList = new ArrayList<NetworkCloudlet>();
+//
+//			//Cloudlet properties
+//			int id = 0;
+//			long length = 40000;
+//			long fileSize = 300;
+//			long outputSize = 300;
+//			int memory = 100;
+//			UtilizationModel utilizationModel = new UtilizationModelFull();
+//
+//			NetworkCloudlet cloudlet1 = new NetworkCloudlet(id, length, 1, fileSize, outputSize, memory, utilizationModel, utilizationModel, utilizationModel);
+//			cloudlet1.setUserId(brokerId);
+//
+//			id++;
+//			NetworkCloudlet cloudlet2 = new NetworkCloudlet(id, length*2, 2, fileSize, outputSize, memory, utilizationModel, utilizationModel, utilizationModel);
+//			cloudlet2.setUserId(brokerId);
+//			
+//			id++;
+//			NetworkCloudlet cloudlet3 = new NetworkCloudlet(id, length*2, 2, fileSize, outputSize, memory, utilizationModel, utilizationModel, utilizationModel);
+//			cloudlet3.setUserId(brokerId);
+//			
+//			Map<NetworkCloudlet, Double> cloudletSubmitTimeMap = new HashMap<NetworkCloudlet, Double>();
+//			cloudletSubmitTimeMap.put(cloudlet1, 0.0);
+//			cloudletSubmitTimeMap.put(cloudlet2, 100.0);
+//			cloudletSubmitTimeMap.put(cloudlet3, 400.0);
+//
+//			//add the cloudlets to the list
+//			cloudletList.add(cloudlet1);
+//			cloudletList.add(cloudlet2);
+//			cloudletList.add(cloudlet3);
+//
+//			//submit cloudlet list to the broker
+//			broker.submitCloudletList(cloudletList);
+//			broker.setCloudletSubmitTimeMap(cloudletSubmitTimeMap);
+//
+//
+//			//bind the cloudlets to the vms. This way, the broker
+//			// will submit the bound cloudlets only to the specific VM
+//			broker.bindCloudletToVm(cloudlet1.getCloudletId(),vm1.getId());
+//			broker.bindCloudletToVm(cloudlet2.getCloudletId(),vm2.getId());
+//			broker.bindCloudletToVm(cloudlet3.getCloudletId(),vm2.getId());
+
 
 			// Sixth step: Starts the simulation
 			CloudSim.startSimulation();
@@ -105,7 +194,7 @@ public class NewNetworkExample {
 		// In this example, it will have only one core.
 		// List<Pe> peList = new ArrayList<Pe>();
 
-		int mips = 1;
+		int mips = 10;
 
 		// 3. Create PEs and add these into a list.
 		// peList.add(new Pe(0, new PeProvisionerSimple(mips))); // need to

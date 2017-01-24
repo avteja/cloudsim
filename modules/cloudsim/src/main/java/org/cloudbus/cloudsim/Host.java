@@ -692,6 +692,7 @@ public class Host {
 		FullHostStateHistoryEntry stateHistory = new 
 				FullHostStateHistoryEntry(time, totalAllocatedMips, totalRequestedMips, true);
 		fullStateHistory.put(time, stateHistory);
+		System.out.println("Host " + getId() + " state stored at time " + time);
 	}
 
 }

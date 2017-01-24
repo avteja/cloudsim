@@ -154,6 +154,7 @@ public class DatacenterBroker extends SimEntity {
 
 	@Override
 	public void processEvent(SimEvent ev) {
+		EventSummary.storePresentState(CloudSim.clock());
 		switch (ev.getTag()) {
 		// Resource characteristics request
 			case CloudSimTags.RESOURCE_CHARACTERISTICS_REQUEST:

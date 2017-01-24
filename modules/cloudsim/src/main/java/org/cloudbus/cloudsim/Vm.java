@@ -627,14 +627,19 @@ public class Vm {
 	public void storeCurrentState(double time) {
 		double totalAllocatedMips = 0.0;
 		double totalRequestedMips = 0.0;
-		for (double mips: getCurrentAllocatedMips()) {
-			totalAllocatedMips += mips;
+		if (getCurrentAllocatedMips() != null) {
+			for (double mips: getCurrentAllocatedMips()) {
+				totalAllocatedMips += mips;
+			}
 		}
-		for (double mips: getCurrentRequestedMips()) {
-			totalRequestedMips += mips;
+		if (getCurrentRequestedMips() != null) {
+			for (double mips: getCurrentRequestedMips()) {
+				totalRequestedMips += mips;
+			}
 		}
 		FullVmStateHistoryEntry stateHistory = new 
 				FullVmStateHistoryEntry(time, totalAllocatedMips, totalRequestedMips, isInMigration());
 		fullStateHistory.put(time, stateHistory);
+		System.out.println("VM " + getId() + " state stored at time " + time);
 	}
 }

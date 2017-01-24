@@ -1,43 +1,41 @@
 package org.cloudbus.cloudsim;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class EventSummary {
 	
-	private List<Vm> vmList;
+	private static List<? extends Vm> vmList;
 	
-	private List<Host> hostList;
-	
-	private Map<Vm, List<VmStateHistoryEntry> > vmStateMap;
-	
-	private Map<Host, List<HostStateHistoryEntry> > hostStateMap;
-	
+	private static List<Host> hostList;
+		
 	public EventSummary(List<Vm> vmList, List<Host> hostList) {
-		this.vmList = vmList;
-		this.hostList = hostList;
-		vmStateMap = new HashMap<Vm, List<VmStateHistoryEntry> >();
-		hostStateMap = new HashMap<Host, List<HostStateHistoryEntry> >();
+		EventSummary.vmList = vmList;
+		EventSummary.hostList = hostList;
+	}
+	
+	public static void storePresentState(double time) {
 		for (Vm vm: vmList) {
-			vmStateMap.put(vm, new ArrayList<VmStateHistoryEntry>());
+			vm.storeCurrentState(time);
 		}
 		for (Host host: hostList) {
-			hostStateMap.put(host, new ArrayList<HostStateHistoryEntry>());
+			host.storeCurrentState(time);
 		}
 	}
 	
-	public void storePresentState(double time) {
-		
+	public static void setVmList(List<? extends Vm> vmList) {
+		EventSummary.vmList = vmList;
 	}
 	
-	public void setVmList(List<Vm> vmList) {
-		this.vmList = vmList;
+	public static void setHostList(List<Host> hostList) {
+		EventSummary.hostList = hostList;
 	}
 	
-	public void setHostList(List<Host> hostList) {
-		this.hostList = hostList;
+	public List<Vm> getVmList(List<Vm> vmList) {
+		return vmList;
+	}
+	
+	public List<Host> getHostList(List<Host> hostList) {
+		return hostList;
 	}
 	
 }

@@ -45,6 +45,24 @@ public class FullHostStateHistoryEntry extends HostStateHistoryEntry {
 		super(time, allocatedMips, requestedMips, isActive);
 	}
 	
+	public String toString() {
+		String str = "";
+		str += "Ram = " + Integer.toString(ram) + "; Available Ram = " + Integer.toString(availableRam)
+				+ "; Requested Ram = " + Integer.toString(requestedRam) + "\n";
+		str += "Mips = " + Double.toString(mips) + "; Available Mips = " + Double.toString(availableMips)
+				+ "; Requested Mips = " + Double.toString(requestedMips) + "\n";
+		str += "Bw = " + Long.toString(bw) + "; Available Bw = " + Long.toString(availableBw)
+				+ "; Requested Bw = " + Long.toString(requestedBw) + "\n";
+		str += "CPU Util = " + Double.toString(cpuUtil) + "; Ram Util = " + Double.toString(ramUtil)
+				+ "; Bw Util = " + Double.toString(bwUtil) + "\n";
+		str += "VM IDs = ";
+		for (Integer id: vmIdsList) {
+			str += Integer.toString(id) + " ";
+		}
+		str += "\n";
+		return str;
+	}
+	
 	public int getRam() {
 		return ram;
 	}

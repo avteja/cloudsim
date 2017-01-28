@@ -34,6 +34,19 @@ public class FullVmStateHistoryEntry extends VmStateHistoryEntry {
 		super(time, allocatedMips, requestedMips, isInMigration);
 	}
 	
+	public String toString() {
+		String str = "";
+		str += "Allocated Ram = " + Integer.toString(allocatedRam)
+				+ "; Requested Ram = " + Integer.toString(requestedRam) + "\n";
+		str += "Allocated Mips = " + Double.toString(allocatedMips)
+				+ "; Requested Mips = " + Double.toString(requestedMips) + "\n";
+		str += "Allocated Bw = " + Long.toString(allocatedBw)
+				+ "; Requested Bw = " + Long.toString(requestedBw) + "\n";
+		str += "CPU Util = " + Double.toString(cpuUtil) + "; Ram Util = " + Double.toString(ramUtil)
+				+ "; Bw Util = " + Double.toString(bwUtil) + "\n";
+		return str;
+	}
+	
 	public int getAllocatedRam() {
 		return allocatedRam;
 	}

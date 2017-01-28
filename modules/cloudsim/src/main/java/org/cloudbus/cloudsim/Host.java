@@ -676,7 +676,7 @@ public class Host {
 		getStateHistory().add(newState);
 	}
 	
-	public Map<Double, FullHostStateHistoryEntry> getFullVmStateHistory() {
+	public Map<Double, FullHostStateHistoryEntry> getFullHostStateHistory() {
 		return fullStateHistory;
 	}
 

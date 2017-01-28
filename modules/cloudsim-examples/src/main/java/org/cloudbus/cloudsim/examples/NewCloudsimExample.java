@@ -23,6 +23,8 @@ import org.cloudbus.cloudsim.CloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.Datacenter;
 import org.cloudbus.cloudsim.DatacenterBroker;
 import org.cloudbus.cloudsim.DatacenterCharacteristics;
+import org.cloudbus.cloudsim.FullHostStateHistoryEntry;
+import org.cloudbus.cloudsim.FullVmStateHistoryEntry;
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Pe;
@@ -165,6 +167,8 @@ public class NewCloudsimExample {
 			CloudSim.stopSimulation();
 
         	printCloudletList(newList);
+        	        	
+        	printMetrics(datacenter0.getHostList(), datacenter0.getVmList());
 
 			Log.printLine("NewCloudSimExample finished!");
 		}
@@ -296,6 +300,23 @@ public class NewCloudsimExample {
 						indent + indent + dft.format(cloudlet.getFinishTime()));
 			}
 		}
-
+	}
+	
+	/*
+	 * Prints out the Host/VM State Histories
+	 */
+	private static void printMetrics(List<Host> hostList, List<Vm> vmList) {
+		for (Host host: hostList) {
+			System.out.println("Host " + host.getId());
+			for (Map.Entry<Double, FullHostStateHistoryEntry> entry : host.getFullHostStateHistory().entrySet()) {
+			    System.out.println("Time = " + entry.getKey() + "\n" + entry.getValue().toString());
+			}
+		}
+		for (Vm vm: vmList) {
+			System.out.println("VM " + vm.getId());
+			for (Map.Entry<Double, FullVmStateHistoryEntry> entry : vm.getFullVmStateHistory().entrySet()) {
+			    System.out.println("Time = " + entry.getKey() + "\n" + entry.getValue().toString());
+			}
+		}
 	}
 }

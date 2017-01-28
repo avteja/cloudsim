@@ -105,7 +105,7 @@ public class NewNetworkExample {
 			vmCreateTimeMap.put(vm2, 10.0);
 			vmCreateTimeMap.put(vm3, 20.0);
 			
-			datacenter0.setVmCreateTimeMap(vmCreateTimeMap);
+			broker.setVmCreateTimeMap(vmCreateTimeMap);
 
 			// submit vm list to the broker
 

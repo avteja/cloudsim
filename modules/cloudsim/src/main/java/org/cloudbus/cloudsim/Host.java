@@ -691,8 +691,87 @@ public class Host {
 		}
 		FullHostStateHistoryEntry stateHistory = new 
 				FullHostStateHistoryEntry(time, totalAllocatedMips, totalRequestedMips, true);
+		
+		/*
+		 * Add all function calls to setters of StateHistory attributes
+		 */
+		
+		/*
+		 * Ram related attributes
+		 */
+		stateHistory.setRam(getRam());
+		stateHistory.setAvailableRam(getRamProvisioner().getAvailableRam());
+		int totalRequestedRam = 0;
+		for (Vm vm: getVmList()) {
+			totalRequestedRam += vm.getCurrentRequestedRam();
+		}
+		stateHistory.setRequestedRam(totalRequestedRam);
+		
+		/*
+		 * Mips related attributes
+		 */
+		stateHistory.setMips(getTotalMips());
+		List<Double> availableMipsList = new ArrayList<Double>();
+		double availableMips = 0.0;
+		for (Pe pe: peList) {
+			double mips = pe.getPeProvisioner().getAvailableMips();
+			availableMips += mips;
+			availableMipsList.add(mips);
+		}
+		stateHistory.setAvailableMipsList(availableMipsList);
+		stateHistory.setAvailableMips(availableMips);
+		stateHistory.setRequestedMips(totalRequestedMips);
+		
+		/*
+		 * Bw related attributes
+		 */
+		stateHistory.setBw(getBw());
+		stateHistory.setAvailableBw(getBwProvisioner().getAvailableBw());
+		long totalRequestedBw = 0;
+		for (Vm vm: getVmList()) {
+			totalRequestedRam += vm.getCurrentRequestedBw();
+		}
+		stateHistory.setRequestedBw(totalRequestedBw);
+		
+		/*
+		 * Utilization attributes
+		 */
+		double totalCpuUtil = 0.0;
+		for (Vm vm: getVmList()) {
+			totalCpuUtil += vm.getTotalUtilizationOfCpu(time);
+		}
+		stateHistory.setCpuUtil(totalCpuUtil);
+		
+		double totalRamUtil = 0.0;
+		for (Vm vm: getVmList()) {
+			totalRamUtil += 
+					(vm.getCloudletScheduler().getCurrentRequestedUtilizationOfRam())
+					*(vm.getCurrentRequestedRam());
+		}
+		totalRamUtil /= getRam();
+		stateHistory.setRamUtil(totalRamUtil);
+		
+		double totalBwUtil = 0.0;
+		for (Vm vm: getVmList()) {
+			totalBwUtil += 
+					(vm.getCloudletScheduler().getCurrentRequestedUtilizationOfBw())
+					*(vm.getCurrentRequestedBw());
+		}
+		totalBwUtil /= getBw();
+		stateHistory.setBwUtil(totalBwUtil);
+		
+		List<Integer> vmIdsList = new ArrayList<Integer>();
+		for (Vm vm: getVmList()) {
+			vmIdsList.add(vm.getId());
+		}
+		stateHistory.setVmIdsList(vmIdsList);
+		
+		/*
+		 * State History stored for the given time instant
+		 */
 		fullStateHistory.put(time, stateHistory);
 		System.out.println("Host " + getId() + " state stored at time " + time);
+		
 	}
 
 }

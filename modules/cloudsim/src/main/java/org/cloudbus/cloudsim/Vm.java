@@ -639,6 +639,28 @@ public class Vm {
 		}
 		FullVmStateHistoryEntry stateHistory = new 
 				FullVmStateHistoryEntry(time, totalAllocatedMips, totalRequestedMips, isInMigration());
+		
+		/*
+		 * Add all function calls to setters of StateHistory attributes
+		 */
+		
+		stateHistory.setAllocatedRam(currentAllocatedRam);
+		stateHistory.setRequestedRam(ram);
+		
+		stateHistory.setAllocatedBw(currentAllocatedBw);
+		stateHistory.setRequestedBw(bw);
+		
+		stateHistory.setAllocatedMips(totalAllocatedMips);
+		stateHistory.setAllocatedMipsList(currentAllocatedMips);
+		stateHistory.setRequestedMips(totalRequestedMips);
+		
+		stateHistory.setRamUtil(getCloudletScheduler().getCurrentRequestedUtilizationOfRam());
+		stateHistory.setCpuUtil(getCloudletScheduler().getTotalUtilizationOfCpu(time));
+		stateHistory.setBwUtil(getCloudletScheduler().getCurrentRequestedUtilizationOfBw());		
+		
+		/*
+		 * State History stored for the given time instant
+		 */
 		fullStateHistory.put(time, stateHistory);
 		System.out.println("VM " + getId() + " state stored at time " + time);
 	}

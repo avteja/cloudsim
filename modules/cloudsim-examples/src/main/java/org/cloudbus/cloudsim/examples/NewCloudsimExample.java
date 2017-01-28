@@ -98,7 +98,7 @@ public class NewCloudsimExample {
 
 			//the second VM will have twice the priority of VM1 and so will receive twice CPU time
 			vmid++;
-			Vm vm2 = new Vm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerSpaceShared());
+			Vm vm2 = new Vm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerTimeShared());
 
 			//add the VMs to the vmList
 			vmlist.add(vm1);
@@ -128,7 +128,7 @@ public class NewCloudsimExample {
 			cloudlet1.setUserId(brokerId);
 
 			id++;
-			Cloudlet cloudlet2 = new Cloudlet(id, length*2, 2, fileSize, outputSize, utilizationModel, utilizationModel, utilizationModel);
+			Cloudlet cloudlet2 = new Cloudlet(id, length, 2, fileSize, outputSize, utilizationModel, utilizationModel, utilizationModel);
 			cloudlet2.setUserId(brokerId);
 			
 			id++;
@@ -137,8 +137,8 @@ public class NewCloudsimExample {
 			
 			Map<Cloudlet, Double> cloudletSubmitTimeMap = new HashMap<Cloudlet, Double>();
 			cloudletSubmitTimeMap.put(cloudlet1, 0.0);
-			cloudletSubmitTimeMap.put(cloudlet2, 100.0);
-			cloudletSubmitTimeMap.put(cloudlet3, 400.0);
+			cloudletSubmitTimeMap.put(cloudlet2, 0.0);
+			cloudletSubmitTimeMap.put(cloudlet3, 0.0);
 
 			//add the cloudlets to the list
 			cloudletList.add(cloudlet1);

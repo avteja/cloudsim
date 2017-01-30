@@ -101,7 +101,7 @@ public class Datacenter extends SimEntity {
 		}
 		
 		EventSummary.setHostList(getCharacteristics().getHostList());
-		EventSummary.setVmList(vmList);
+		EventSummary.setVmList(getVmList());
 
 		// If this resource doesn't have any PEs then no useful at all
 		if (getCharacteristics().getNumberOfPes() == 0) {

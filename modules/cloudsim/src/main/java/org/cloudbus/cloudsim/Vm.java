@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Represents a Virtual Machine (VM) that runs inside a Host, sharing a hostList with other VMs. It processes
@@ -138,7 +139,7 @@ public class Vm {
 		setCurrentAllocatedMips(null);
 		setCurrentAllocatedRam(0);
 		setCurrentAllocatedSize(0);
-		fullStateHistory = new HashMap<Double, FullVmStateHistoryEntry>();
+		fullStateHistory = new TreeMap<Double, FullVmStateHistoryEntry>();
 	}
 
 	/**

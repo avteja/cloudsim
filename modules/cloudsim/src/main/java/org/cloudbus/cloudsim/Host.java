@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.lists.PeList;
@@ -91,7 +92,7 @@ public class Host {
 		setPeList(peList);
 		setFailed(false);
 		
-		fullStateHistory = new HashMap<Double, FullHostStateHistoryEntry>();
+		fullStateHistory = new TreeMap<Double, FullHostStateHistoryEntry>();
 	}
 
 	/**

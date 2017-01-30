@@ -9,6 +9,8 @@
 
 package org.cloudbus.cloudsim.examples;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -168,7 +170,7 @@ public class NewCloudsimExample {
 
         	printCloudletList(newList);
         	        	
-        	printMetrics(datacenter0.getHostList(), datacenter0.getVmList());
+        	printMetrics(datacenter0.getHostList(), vmlist);
 
 			Log.printLine("NewCloudSimExample finished!");
 		}
@@ -306,17 +308,30 @@ public class NewCloudsimExample {
 	 * Prints out the Host/VM State Histories
 	 */
 	private static void printMetrics(List<Host> hostList, List<Vm> vmList) {
-		for (Host host: hostList) {
-			System.out.println("Host " + host.getId());
-			for (Map.Entry<Double, FullHostStateHistoryEntry> entry : host.getFullHostStateHistory().entrySet()) {
-			    System.out.println("Time = " + entry.getKey() + "\n" + entry.getValue().toString());
-			}
-		}
-		for (Vm vm: vmList) {
-			System.out.println("VM " + vm.getId());
-			for (Map.Entry<Double, FullVmStateHistoryEntry> entry : vm.getFullVmStateHistory().entrySet()) {
-			    System.out.println("Time = " + entry.getKey() + "\n" + entry.getValue().toString());
-			}
+		String fileName = "/home/ravi/Documents/Ravi Teja A.V/RnD/metrics.txt";
+		try {
+			File file = new File(fileName);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file.getAbsoluteFile(), false);
+            for (Host host: hostList) {
+    			fw.write("Host " + host.getId() + "\n");
+    			fw.write("------\n");
+    			for (Map.Entry<Double, FullHostStateHistoryEntry> entry : host.getFullHostStateHistory().entrySet()) {
+    			    fw.write("Time = " + entry.getKey() + "\n" + entry.getValue().toString() + "\n");
+    			}
+    		}
+    		for (Vm vm: vmList) {
+    			fw.write("VM " + vm.getId() + "\n");
+    			fw.write("----\n");
+    			for (Map.Entry<Double, FullVmStateHistoryEntry> entry : vm.getFullVmStateHistory().entrySet()) {
+    			    fw.write("Time = " + entry.getKey() + "\n" + entry.getValue().toString() + "\n");
+    			}
+    		}
+            fw.close();
+		} catch(Exception e) {
+			System.out.println(e);
 		}
 	}
 }

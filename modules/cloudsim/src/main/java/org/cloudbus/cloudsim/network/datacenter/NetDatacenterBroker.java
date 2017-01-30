@@ -100,6 +100,8 @@ public class NetDatacenterBroker extends SimEntity {
 	 * This map contains the user set cloud submit times for each cloudlet.
 	 */
 	protected Map<NetworkCloudlet, Double> cloudletSubmitTimeMap;
+	
+	protected Map<Vm, Double> vmCreateTimeMap;
 
 	public static NetworkDatacenter linkDC;
 
@@ -138,6 +140,7 @@ public class NetDatacenterBroker extends SimEntity {
 		setVmsToDatacentersMap(new HashMap<Integer, Integer>());
 		setDatacenterCharacteristicsList(new HashMap<Integer, DatacenterCharacteristics>());
 		setCloudletSubmitTimeMap(new HashMap<NetworkCloudlet, Double>());
+		setVmCreateTimeMap(new HashMap<Vm, Double>());
 	}
 
 	/**
@@ -486,10 +489,14 @@ public class NetDatacenterBroker extends SimEntity {
 		int requestedVms = 0;
 		String datacenterName = CloudSim.getEntityName(datacenterId);
 		for (Vm vm : getVmList()) {
+			Double delay = vmCreateTimeMap.get(vm);
+ 			if (delay == null) {
+ 				delay = 0.0;
+			}
 			if (!getVmsToDatacentersMap().containsKey(vm.getId())) {
 				Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Create VM #" + vm.getId()
 						+ " in " + datacenterName);
-				sendNow(datacenterId, CloudSimTags.VM_CREATE_ACK, vm);
+				send(datacenterId, delay, CloudSimTags.VM_CREATE_ACK, vm);
 				requestedVms++;
 			}
 		}
@@ -839,6 +846,10 @@ public class NetDatacenterBroker extends SimEntity {
 	
 	public void setCloudletSubmitTimeMap(Map<NetworkCloudlet, Double> cloudletSubmitTimeMap) {
 		this.cloudletSubmitTimeMap = cloudletSubmitTimeMap;
+	}
+	
+	public void setVmCreateTimeMap(Map<Vm, Double> vmCreateTimeMap) {
+		this.vmCreateTimeMap = vmCreateTimeMap;
 	}
 
 }

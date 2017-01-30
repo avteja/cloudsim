@@ -31,6 +31,7 @@ import org.cloudbus.cloudsim.network.datacenter.NetworkDatacenter;
 import org.cloudbus.cloudsim.network.datacenter.NetworkHost;
 import org.cloudbus.cloudsim.network.datacenter.NetworkVm;
 import org.cloudbus.cloudsim.network.datacenter.NetworkVmAllocationPolicy;
+import org.cloudbus.cloudsim.network.datacenter.TaskStage;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
@@ -102,7 +103,7 @@ public class NewNetworkExample {
 			
 			Map<Vm, Double> vmCreateTimeMap = new HashMap<Vm, Double>();
 			vmCreateTimeMap.put(vm1, 0.0);
-			vmCreateTimeMap.put(vm2, 10.0);
+			vmCreateTimeMap.put(vm2, 0.0);
 			vmCreateTimeMap.put(vm3, 20.0);
 			
 			broker.setVmCreateTimeMap(vmCreateTimeMap);
@@ -112,46 +113,67 @@ public class NewNetworkExample {
 			broker.submitVmList(vmlist);
 			
 			//Fifth step: Create two Cloudlets
-//			cloudletList = new ArrayList<NetworkCloudlet>();
-//
-//			//Cloudlet properties
-//			int id = 0;
-//			long length = 40000;
-//			long fileSize = 300;
-//			long outputSize = 300;
-//			int memory = 100;
-//			UtilizationModel utilizationModel = new UtilizationModelFull();
-//
-//			NetworkCloudlet cloudlet1 = new NetworkCloudlet(id, length, 1, fileSize, outputSize, memory, utilizationModel, utilizationModel, utilizationModel);
-//			cloudlet1.setUserId(brokerId);
-//
-//			id++;
-//			NetworkCloudlet cloudlet2 = new NetworkCloudlet(id, length*2, 2, fileSize, outputSize, memory, utilizationModel, utilizationModel, utilizationModel);
-//			cloudlet2.setUserId(brokerId);
-//			
-//			id++;
-//			NetworkCloudlet cloudlet3 = new NetworkCloudlet(id, length*2, 2, fileSize, outputSize, memory, utilizationModel, utilizationModel, utilizationModel);
-//			cloudlet3.setUserId(brokerId);
-//			
-//			Map<NetworkCloudlet, Double> cloudletSubmitTimeMap = new HashMap<NetworkCloudlet, Double>();
-//			cloudletSubmitTimeMap.put(cloudlet1, 0.0);
-//			cloudletSubmitTimeMap.put(cloudlet2, 100.0);
-//			cloudletSubmitTimeMap.put(cloudlet3, 400.0);
-//
-//			//add the cloudlets to the list
-//			cloudletList.add(cloudlet1);
-//			cloudletList.add(cloudlet2);
+			cloudletList = new ArrayList<NetworkCloudlet>();
+
+			//Cloudlet properties
+			int id = 0;
+			long length = 4000;
+			long fileSize = 300;
+			long outputSize = 300;
+			int memory = 100;
+			UtilizationModel utilizationModel = new UtilizationModelFull();
+
+			NetworkCloudlet cloudlet1 = new NetworkCloudlet(id, 0, 1, fileSize, outputSize, memory, utilizationModel, utilizationModel, utilizationModel);
+			cloudlet1.setUserId(brokerId);
+
+			id++;
+			NetworkCloudlet cloudlet2 = new NetworkCloudlet(id, 0, 2, fileSize, outputSize, memory, utilizationModel, utilizationModel, utilizationModel);
+			cloudlet2.setUserId(brokerId);
+			
+			id++;
+			NetworkCloudlet cloudlet3 = new NetworkCloudlet(id, 0, 2, fileSize, outputSize, memory, utilizationModel, utilizationModel, utilizationModel);
+			cloudlet3.setUserId(brokerId);
+			
+			cloudlet1.numStage = 2;
+			cloudlet1.setUserId(brokerId);
+			cloudlet1.submittime = CloudSim.clock();
+			cloudlet1.currStagenum = -1;
+			cloudlet1.setVmId(vm1.getId());
+
+			// first stage: big computation
+			cloudlet1.stages.add(new TaskStage(NetworkConstants.EXECUTION, 0, 1000 * 0.8, 0, memory, vm1.getId(), cloudlet1
+					.getCloudletId()));
+			cloudlet1.stages.add(new TaskStage(NetworkConstants.WAIT_SEND, 100*1024*1024, 0, 1, memory, vm2.getId(), cloudlet2
+					.getCloudletId()));
+			
+			cloudlet2.numStage = 1;
+			cloudlet2.setUserId(brokerId);
+			cloudlet2.submittime = CloudSim.clock();
+			cloudlet2.currStagenum = -1;
+			cloudlet2.setVmId(vm2.getId());
+			
+			cloudlet2.stages.add(new TaskStage(NetworkConstants.WAIT_RECV, 0, 0, 1, memory, vm1.getId(), cloudlet1
+					.getCloudletId()));
+			
+			Map<NetworkCloudlet, Double> cloudletSubmitTimeMap = new HashMap<NetworkCloudlet, Double>();
+			cloudletSubmitTimeMap.put(cloudlet1, 0.0);
+			cloudletSubmitTimeMap.put(cloudlet2, 0.0);
+			cloudletSubmitTimeMap.put(cloudlet3, 400.0);
+
+			//add the cloudlets to the list
+			cloudletList.add(cloudlet1);
+			cloudletList.add(cloudlet2);
 //			cloudletList.add(cloudlet3);
-//
-//			//submit cloudlet list to the broker
-//			broker.submitCloudletList(cloudletList);
-//			broker.setCloudletSubmitTimeMap(cloudletSubmitTimeMap);
-//
-//
-//			//bind the cloudlets to the vms. This way, the broker
-//			// will submit the bound cloudlets only to the specific VM
-//			broker.bindCloudletToVm(cloudlet1.getCloudletId(),vm1.getId());
-//			broker.bindCloudletToVm(cloudlet2.getCloudletId(),vm2.getId());
+
+			//submit cloudlet list to the broker
+			broker.submitCloudletList(cloudletList);
+			broker.setCloudletSubmitTimeMap(cloudletSubmitTimeMap);
+
+
+			//bind the cloudlets to the vms. This way, the broker
+			// will submit the bound cloudlets only to the specific VM
+			broker.bindCloudletToVm(cloudlet1.getCloudletId(),vm1.getId());
+			broker.bindCloudletToVm(cloudlet2.getCloudletId(),vm2.getId());
 //			broker.bindCloudletToVm(cloudlet3.getCloudletId(),vm2.getId());
 
 

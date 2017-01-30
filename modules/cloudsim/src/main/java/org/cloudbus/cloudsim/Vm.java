@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Represents a Virtual Machine (VM) that runs inside a Host, sharing a hostList with other VMs. It processes
@@ -138,7 +139,7 @@ public class Vm {
 		setCurrentAllocatedMips(null);
 		setCurrentAllocatedRam(0);
 		setCurrentAllocatedSize(0);
-		fullStateHistory = new HashMap<Double, FullVmStateHistoryEntry>();
+		fullStateHistory = new TreeMap<Double, FullVmStateHistoryEntry>();
 	}
 
 	/**
@@ -639,6 +640,28 @@ public class Vm {
 		}
 		FullVmStateHistoryEntry stateHistory = new 
 				FullVmStateHistoryEntry(time, totalAllocatedMips, totalRequestedMips, isInMigration());
+		
+		/*
+		 * Add all function calls to setters of StateHistory attributes
+		 */
+		
+		stateHistory.setAllocatedRam(currentAllocatedRam);
+		stateHistory.setRequestedRam(ram);
+		
+		stateHistory.setAllocatedBw(currentAllocatedBw);
+		stateHistory.setRequestedBw(bw);
+		
+		stateHistory.setAllocatedMips(totalAllocatedMips);
+		stateHistory.setAllocatedMipsList(currentAllocatedMips);
+		stateHistory.setRequestedMips(totalRequestedMips);
+		
+		stateHistory.setRamUtil(getCloudletScheduler().getCurrentRequestedUtilizationOfRam());
+		stateHistory.setCpuUtil(getCloudletScheduler().getTotalUtilizationOfCpu(time));
+		stateHistory.setBwUtil(getCloudletScheduler().getCurrentRequestedUtilizationOfBw());		
+		
+		/*
+		 * State History stored for the given time instant
+		 */
 		fullStateHistory.put(time, stateHistory);
 		System.out.println("VM " + getId() + " state stored at time " + time);
 	}

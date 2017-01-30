@@ -9,6 +9,8 @@
 
 package org.cloudbus.cloudsim.examples;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -23,6 +25,8 @@ import org.cloudbus.cloudsim.CloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.Datacenter;
 import org.cloudbus.cloudsim.DatacenterBroker;
 import org.cloudbus.cloudsim.DatacenterCharacteristics;
+import org.cloudbus.cloudsim.FullHostStateHistoryEntry;
+import org.cloudbus.cloudsim.FullVmStateHistoryEntry;
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Pe;
@@ -98,7 +102,7 @@ public class NewCloudsimExample {
 
 			//the second VM will have twice the priority of VM1 and so will receive twice CPU time
 			vmid++;
-			Vm vm2 = new Vm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerSpaceShared());
+			Vm vm2 = new Vm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerTimeShared());
 
 			//add the VMs to the vmList
 			vmlist.add(vm1);
@@ -128,7 +132,7 @@ public class NewCloudsimExample {
 			cloudlet1.setUserId(brokerId);
 
 			id++;
-			Cloudlet cloudlet2 = new Cloudlet(id, length*2, 2, fileSize, outputSize, utilizationModel, utilizationModel, utilizationModel);
+			Cloudlet cloudlet2 = new Cloudlet(id, length, 2, fileSize, outputSize, utilizationModel, utilizationModel, utilizationModel);
 			cloudlet2.setUserId(brokerId);
 			
 			id++;
@@ -137,8 +141,8 @@ public class NewCloudsimExample {
 			
 			Map<Cloudlet, Double> cloudletSubmitTimeMap = new HashMap<Cloudlet, Double>();
 			cloudletSubmitTimeMap.put(cloudlet1, 0.0);
-			cloudletSubmitTimeMap.put(cloudlet2, 100.0);
-			cloudletSubmitTimeMap.put(cloudlet3, 400.0);
+			cloudletSubmitTimeMap.put(cloudlet2, 0.0);
+			cloudletSubmitTimeMap.put(cloudlet3, 0.0);
 
 			//add the cloudlets to the list
 			cloudletList.add(cloudlet1);
@@ -165,6 +169,8 @@ public class NewCloudsimExample {
 			CloudSim.stopSimulation();
 
         	printCloudletList(newList);
+        	        	
+        	printMetrics(datacenter0.getHostList(), vmlist);
 
 			Log.printLine("NewCloudSimExample finished!");
 		}
@@ -296,6 +302,36 @@ public class NewCloudsimExample {
 						indent + indent + dft.format(cloudlet.getFinishTime()));
 			}
 		}
-
+	}
+	
+	/*
+	 * Prints out the Host/VM State Histories
+	 */
+	private static void printMetrics(List<Host> hostList, List<Vm> vmList) {
+		String fileName = "/home/ravi/Documents/Ravi Teja A.V/RnD/metrics.txt";
+		try {
+			File file = new File(fileName);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file.getAbsoluteFile(), false);
+            for (Host host: hostList) {
+    			fw.write("Host " + host.getId() + "\n");
+    			fw.write("------\n");
+    			for (Map.Entry<Double, FullHostStateHistoryEntry> entry : host.getFullHostStateHistory().entrySet()) {
+    			    fw.write("Time = " + entry.getKey() + "\n" + entry.getValue().toString() + "\n");
+    			}
+    		}
+    		for (Vm vm: vmList) {
+    			fw.write("VM " + vm.getId() + "\n");
+    			fw.write("----\n");
+    			for (Map.Entry<Double, FullVmStateHistoryEntry> entry : vm.getFullVmStateHistory().entrySet()) {
+    			    fw.write("Time = " + entry.getKey() + "\n" + entry.getValue().toString() + "\n");
+    			}
+    		}
+            fw.close();
+		} catch(Exception e) {
+			System.out.println(e);
+		}
 	}
 }

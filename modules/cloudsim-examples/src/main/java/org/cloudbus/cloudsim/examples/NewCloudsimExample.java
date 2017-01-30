@@ -320,6 +320,18 @@ public class NewCloudsimExample {
     			fw.write("------\n");
     			for (Map.Entry<Double, FullHostStateHistoryEntry> entry : host.getFullHostStateHistory().entrySet()) {
     			    fw.write("Time = " + entry.getKey() + "\n" + entry.getValue().toString() + "\n");
+    			    DataFiles.addToDataFile("Host_" + host.getId() + "_RAM", entry.getKey(), entry.getValue().getRam());
+    			    DataFiles.addToDataFile("Host_" + host.getId() + "_Available_RAM", entry.getKey(), entry.getValue().getAvailableRam());
+    			    DataFiles.addToDataFile("Host_" + host.getId() + "_Requested_RAM", entry.getKey(), entry.getValue().getRequestedRam());
+    			    DataFiles.addToDataFile("Host_" + host.getId() + "_BW", entry.getKey(), entry.getValue().getBw());
+    			    DataFiles.addToDataFile("Host_" + host.getId() + "_Available_BW", entry.getKey(), entry.getValue().getAvailableBw());
+    			    DataFiles.addToDataFile("Host_" + host.getId() + "_Requested_BW", entry.getKey(), entry.getValue().getRequestedBw());
+    			    DataFiles.addToDataFile("Host_" + host.getId() + "_MIPS", entry.getKey(), entry.getValue().getRam());
+    			    DataFiles.addToDataFile("Host_" + host.getId() + "_Available_MIPS", entry.getKey(), entry.getValue().getAvailableMips());
+    			    DataFiles.addToDataFile("Host_" + host.getId() + "_Requested_MIPS", entry.getKey(), entry.getValue().getRequestedMips());
+    			    DataFiles.addToDataFile("Host_" + host.getId() + "_RAM_Util", entry.getKey(), entry.getValue().getRamUtil());
+    			    DataFiles.addToDataFile("Host_" + host.getId() + "_BW_Util", entry.getKey(), entry.getValue().getBwUtil());
+    			    DataFiles.addToDataFile("Host_" + host.getId() + "_CPU_Util", entry.getKey(), entry.getValue().getCpuUtil());
     			}
     		}
     		for (Vm vm: vmList) {
@@ -327,6 +339,15 @@ public class NewCloudsimExample {
     			fw.write("----\n");
     			for (Map.Entry<Double, FullVmStateHistoryEntry> entry : vm.getFullVmStateHistory().entrySet()) {
     			    fw.write("Time = " + entry.getKey() + "\n" + entry.getValue().toString() + "\n");
+    			    DataFiles.addToDataFile("VM_" + vm.getId() + "_Allocated_RAM", entry.getKey(), entry.getValue().getAllocatedRam());
+    			    DataFiles.addToDataFile("VM_" + vm.getId() + "_Requested_RAM", entry.getKey(), entry.getValue().getRequestedRam());
+    			    DataFiles.addToDataFile("VM_" + vm.getId() + "_Allocated_BW", entry.getKey(), entry.getValue().getAllocatedBw());
+    			    DataFiles.addToDataFile("VM_" + vm.getId() + "_Requested_BW", entry.getKey(), entry.getValue().getRequestedBw());
+    			    DataFiles.addToDataFile("VM_" + vm.getId() + "_Allocated_MIPS", entry.getKey(), entry.getValue().getAllocatedMips());
+    			    DataFiles.addToDataFile("VM_" + vm.getId() + "_Requested_MIPS", entry.getKey(), entry.getValue().getRequestedMips());
+    			    DataFiles.addToDataFile("VM_" + vm.getId() + "_RAM_Util", entry.getKey(), entry.getValue().getRamUtil());
+    			    DataFiles.addToDataFile("VM_" + vm.getId() + "_BW_Util", entry.getKey(), entry.getValue().getBwUtil());
+    			    DataFiles.addToDataFile("VM_" + vm.getId() + "_CPU_Util", entry.getKey(), entry.getValue().getCpuUtil());
     			}
     		}
             fw.close();

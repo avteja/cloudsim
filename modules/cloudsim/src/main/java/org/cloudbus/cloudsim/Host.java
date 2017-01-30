@@ -730,7 +730,7 @@ public class Host {
 		stateHistory.setAvailableBw(getBwProvisioner().getAvailableBw());
 		long totalRequestedBw = 0;
 		for (Vm vm: getVmList()) {
-			totalRequestedRam += vm.getCurrentRequestedBw();
+			totalRequestedBw += vm.getCurrentRequestedBw();
 		}
 		stateHistory.setRequestedBw(totalRequestedBw);
 		

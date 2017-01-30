@@ -188,7 +188,8 @@ public class NetworkHost extends Host {
 		for (NetworkPacket hs : packetTosendGlobal) {
                     double delay = (1000 * hs.pkt.data) / avband;
                     NetworkConstants.totaldatatransfer += hs.pkt.data;
-
+                    NetworkVm vm = VmList.getById(getVmList(), hs.pkt.sender);
+                    vm.isSendingCloudlet(hs.pkt.virtualsendid, true);
                     CloudSim.send(getDatacenter().getId(), sw.getId(), delay, CloudSimTags.Network_Event_UP, hs);
                     // send to switch with delay
 		}
@@ -202,6 +203,11 @@ public class NetworkHost extends Host {
          */
 	public double getMaxUtilizationAmongVmsPes(Vm vm) {
 		return PeList.getMaxUtilizationAmongVmsPes(getPeList(), vm);
+	}
+	
+	public void setCloudletSent(int vmid, int cloudletId) {
+		NetworkVm vm = VmList.getById(getVmList(), vmid);
+        vm.isSendingCloudlet(cloudletId, false);
 	}
 
 }

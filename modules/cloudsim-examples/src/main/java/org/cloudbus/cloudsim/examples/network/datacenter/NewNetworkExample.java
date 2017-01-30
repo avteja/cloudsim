@@ -1,5 +1,7 @@
 package org.cloudbus.cloudsim.examples.network.datacenter;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -13,6 +15,8 @@ import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.CloudletSchedulerSpaceShared;
 import org.cloudbus.cloudsim.CloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.DatacenterCharacteristics;
+import org.cloudbus.cloudsim.FullHostStateHistoryEntry;
+import org.cloudbus.cloudsim.FullVmStateHistoryEntry;
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Pe;
@@ -154,6 +158,8 @@ public class NewNetworkExample {
 			
 			cloudlet2.stages.add(new TaskStage(NetworkConstants.WAIT_RECV, 0, 0, 1, memory, vm1.getId(), cloudlet1
 					.getCloudletId()));
+//			cloudlet2.stages.add(new TaskStage(NetworkConstants.EXECUTION, 0, 1000 * 0.3, 0, memory, vm2.getId(), cloudlet2
+//					.getCloudletId()));
 			
 			Map<NetworkCloudlet, Double> cloudletSubmitTimeMap = new HashMap<NetworkCloudlet, Double>();
 			cloudletSubmitTimeMap.put(cloudlet1, 50.0);
@@ -185,6 +191,9 @@ public class NewNetworkExample {
 			// Final step: Print results when simulation is over
 			List<Cloudlet> newList = broker.getCloudletReceivedList();
 			printCloudletList(newList);
+			
+			printMetrics(datacenter0.getHostList(), vmlist);
+			
 			System.out.println("numberofcloudlet " + newList.size() + " Cached "
 					+ NetDatacenterBroker.cachedcloudlet + " Data transfered "
 					+ NetworkConstants.totaldatatransfer);
@@ -421,5 +430,33 @@ public class NewNetworkExample {
 
 		}
 
+	}
+	
+	private static void printMetrics(List<Host> hostList, List<NetworkVm> vmList) {
+		String fileName = "/home/vinay/Documents/RnD/metrics.txt";
+		try {
+			File file = new File(fileName);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file.getAbsoluteFile(), false);
+            for (Host host: hostList) {
+    			fw.write("Host " + host.getId() + "\n");
+    			fw.write("------\n");
+    			for (Map.Entry<Double, FullHostStateHistoryEntry> entry : host.getFullHostStateHistory().entrySet()) {
+    			    fw.write("Time = " + entry.getKey() + "\n" + entry.getValue().toString() + "\n");
+    			}
+    		}
+    		for (Vm vm: vmList) {
+    			fw.write("VM " + vm.getId() + "\n");
+    			fw.write("----\n");
+    			for (Map.Entry<Double, FullVmStateHistoryEntry> entry : vm.getFullVmStateHistory().entrySet()) {
+    			    fw.write("Time = " + entry.getKey() + "\n" + entry.getValue().toString() + "\n");
+    			}
+    		}
+            fw.close();
+		} catch(Exception e) {
+			System.out.println(e);
+		}
 	}
 }

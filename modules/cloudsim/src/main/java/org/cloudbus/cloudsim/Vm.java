@@ -224,6 +224,9 @@ public class Vm {
 		if (isBeingInstantiated()) {
 			return getRam();
 		}
+//		System.out.println(getUid());
+//		System.out.println(getCloudletScheduler().getCurrentRequestedUtilizationOfRam());
+//		System.out.println(getRam());
 		return (int) (getCloudletScheduler().getCurrentRequestedUtilizationOfRam() * getRam());
 	}
 
@@ -663,6 +666,6 @@ public class Vm {
 		 * State History stored for the given time instant
 		 */
 		fullStateHistory.put(time, stateHistory);
-		System.out.println("VM " + getId() + " state stored at time " + time);
+//		System.out.println("VM " + getId() + " state stored at time " + time);
 	}
 }

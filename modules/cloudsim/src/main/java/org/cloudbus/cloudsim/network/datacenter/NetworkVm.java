@@ -11,7 +11,10 @@ package org.cloudbus.cloudsim.network.datacenter;
 import java.util.ArrayList;
 
 import org.cloudbus.cloudsim.CloudletScheduler;
+import org.cloudbus.cloudsim.ResCloudlet;
 import org.cloudbus.cloudsim.Vm;
+import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.lists.CloudletList;
 
 /**
  * NetworkVm class extends {@link Vm} to support simulation of networked datacenters. 
@@ -88,5 +91,14 @@ public class NetworkVm extends Vm implements Comparable<Object> {
 			return 1;
 		}
 		return 0;
+	}
+	
+	public void isSendingCloudlet(int cloudletId, boolean sending) {
+		for (ResCloudlet rcl : getCloudletScheduler().getCloudletExecList()) {
+			NetworkCloudlet nc = ((NetworkCloudlet) (rcl.getCloudlet()));
+			if (nc.getCloudletId() == cloudletId) {
+				nc.setIsSending(sending);
+			}
+		}
 	}
 }

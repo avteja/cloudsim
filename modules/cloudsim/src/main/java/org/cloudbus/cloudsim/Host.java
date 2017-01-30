@@ -704,7 +704,7 @@ public class Host {
 		stateHistory.setAvailableRam(getRamProvisioner().getAvailableRam());
 		int totalRequestedRam = 0;
 		for (Vm vm: getVmList()) {
-			totalRequestedRam += vm.getCurrentRequestedRam();
+			totalRequestedRam += vm.getRam();
 		}
 		stateHistory.setRequestedRam(totalRequestedRam);
 		
@@ -730,7 +730,7 @@ public class Host {
 		stateHistory.setAvailableBw(getBwProvisioner().getAvailableBw());
 		long totalRequestedBw = 0;
 		for (Vm vm: getVmList()) {
-			totalRequestedBw += vm.getCurrentRequestedBw();
+			totalRequestedBw += vm.getBw();
 		}
 		stateHistory.setRequestedBw(totalRequestedBw);
 		
@@ -747,7 +747,7 @@ public class Host {
 		for (Vm vm: getVmList()) {
 			totalRamUtil += 
 					(vm.getCloudletScheduler().getCurrentRequestedUtilizationOfRam())
-					*(vm.getCurrentRequestedRam());
+					*(vm.getRam());
 		}
 		totalRamUtil /= getRam();
 		stateHistory.setRamUtil(totalRamUtil);
@@ -756,7 +756,7 @@ public class Host {
 		for (Vm vm: getVmList()) {
 			totalBwUtil += 
 					(vm.getCloudletScheduler().getCurrentRequestedUtilizationOfBw())
-					*(vm.getCurrentRequestedBw());
+					*(vm.getBw());
 		}
 		totalBwUtil /= getBw();
 		stateHistory.setBwUtil(totalBwUtil);
@@ -771,7 +771,7 @@ public class Host {
 		 * State History stored for the given time instant
 		 */
 		fullStateHistory.put(time, stateHistory);
-		System.out.println("Host " + getId() + " state stored at time " + time);
+//		System.out.println("Host " + getId() + " state stored at time " + time);
 		
 	}
 

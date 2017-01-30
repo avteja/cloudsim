@@ -308,7 +308,7 @@ public class NewCloudsimExample {
 	 * Prints out the Host/VM State Histories
 	 */
 	private static void printMetrics(List<Host> hostList, List<Vm> vmList) {
-		String fileName = "/home/ravi/Documents/Ravi Teja A.V/RnD/metrics.txt";
+		String fileName = "/home/vinay/Documents/RnD/metrics1.txt";
 		try {
 			File file = new File(fileName);
             if (!file.exists()) {

@@ -102,7 +102,7 @@ public class NewNetworkExample {
 			vmlist.add(vm3);
 			
 			Map<Vm, Double> vmCreateTimeMap = new HashMap<Vm, Double>();
-			vmCreateTimeMap.put(vm1, 0.0);
+			vmCreateTimeMap.put(vm1, 20.0);
 			vmCreateTimeMap.put(vm2, 0.0);
 			vmCreateTimeMap.put(vm3, 20.0);
 			
@@ -143,7 +143,7 @@ public class NewNetworkExample {
 			// first stage: big computation
 			cloudlet1.stages.add(new TaskStage(NetworkConstants.EXECUTION, 0, 1000 * 0.8, 0, memory, vm1.getId(), cloudlet1
 					.getCloudletId()));
-			cloudlet1.stages.add(new TaskStage(NetworkConstants.WAIT_SEND, 100*1024*1024, 0, 1, memory, vm2.getId(), cloudlet2
+			cloudlet1.stages.add(new TaskStage(NetworkConstants.WAIT_SEND, 10*1024*1024, 0, 1, memory, vm2.getId(), cloudlet2
 					.getCloudletId()));
 			
 			cloudlet2.numStage = 1;
@@ -156,7 +156,7 @@ public class NewNetworkExample {
 					.getCloudletId()));
 			
 			Map<NetworkCloudlet, Double> cloudletSubmitTimeMap = new HashMap<NetworkCloudlet, Double>();
-			cloudletSubmitTimeMap.put(cloudlet1, 0.0);
+			cloudletSubmitTimeMap.put(cloudlet1, 50.0);
 			cloudletSubmitTimeMap.put(cloudlet2, 0.0);
 			cloudletSubmitTimeMap.put(cloudlet3, 400.0);
 

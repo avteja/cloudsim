@@ -269,6 +269,13 @@ public class Switch extends SimEntity {
 			// packet is recieved from host
 			// packet is to be sent to aggregate level or to another host in the
 			// same level
+			
+			//host has finished receiving
+			int sendHostId = dc.VmtoHostlist.get(hspkt.pkt.sender);
+			NetworkHost shs = hostlist.get(sendHostId);
+			if (shs != null) {
+				shs.setCloudletSent(hspkt.pkt.sender, hspkt.pkt.virtualsendid);
+			}
 
 			int hostid = dc.VmtoHostlist.get(recvVMid);
 			NetworkHost hs = hostlist.get(hostid);

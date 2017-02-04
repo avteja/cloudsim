@@ -108,9 +108,12 @@ public class NetworkCloudletSpaceSharedScheduler extends CloudletScheduler {
 				}
 				TaskStage st = cl.stages.get(cl.currStagenum);
 				if (st.type == NetworkConstants.EXECUTION) {
-
+					
+					cl.setIsSending(false);
+					cl.setIsReceiving(false);
 					// update the time
 					cl.timespentInStage = Math.round(CloudSim.clock() - cl.timetostartStage);
+					
 					if (cl.timespentInStage >= st.time) {
 						changetonextstage(cl, st);
 						// change the stage
@@ -128,6 +131,7 @@ public class NetworkCloudletSpaceSharedScheduler extends CloudletScheduler {
 							if (pkt.reciever == cl.getVmId()) {
 								pkt.recievetime = CloudSim.clock();
 								st.time = CloudSim.clock() - pkt.sendtime;
+								cl.setIsReceiving(true);
 								changetonextstage(cl, st);
 								pkttoremove.add(pkt);
 							}
@@ -247,6 +251,7 @@ public class NetworkCloudletSpaceSharedScheduler extends CloudletScheduler {
 					}
 					pktlist.add(pkt);
 					pkttosend.put(cl.getVmId(), pktlist);
+					cl.setIsSending(true);
 
 				} else {
 					break;
@@ -594,13 +599,23 @@ public class NetworkCloudletSpaceSharedScheduler extends CloudletScheduler {
 	@Override
 	public double getCurrentRequestedUtilizationOfBw() {
                 //@todo The method doesn't appear to be implemented in fact
-		return 0;
+		double bw = 0;
+		for (ResCloudlet rcl : getCloudletExecList()) {
+			bw += ((NetworkCloudlet) (rcl.getCloudlet())).getUtilizationOfBw(CloudSim.clock());
+		}
+		return bw;
+//		return 0;
 	}
 
 	@Override
 	public double getCurrentRequestedUtilizationOfRam() {
                 //@todo The method doesn't appear to be implemented in fact
-		return 0;
+		double ram = 0;
+		for (ResCloudlet rcl : getCloudletExecList()) {
+			ram += ((NetworkCloudlet) (rcl.getCloudlet())).getUtilizationOfRam(CloudSim.clock());
+		}
+		return ram;
+//		return 0;
 	}
-
+	
 }

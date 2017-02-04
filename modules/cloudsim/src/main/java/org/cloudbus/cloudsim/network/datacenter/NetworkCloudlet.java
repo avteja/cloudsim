@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.UtilizationModel;
+import org.cloudbus.cloudsim.core.CloudSim;
 
 /**
  * NetworkCloudlet class extends Cloudlet to support simulation of complex applications. Each such
@@ -74,6 +75,16 @@ public class NetworkCloudlet extends Cloudlet implements Comparable<Object> {
          * Cloudlet's start time.
          */
 	public double starttime;
+	
+		/**
+	     * Cloudlet is sending.
+	     */
+	public boolean isSending;
+	
+		/**
+	     * Cloudlet is receiving.
+	     */
+	public boolean isReceiving;
 
 	public NetworkCloudlet(
 			int cloudletId,
@@ -98,6 +109,8 @@ public class NetworkCloudlet extends Cloudlet implements Comparable<Object> {
 		currStagenum = -1;
 		this.memory = memory;
 		stages = new ArrayList<TaskStage>();
+		isSending = false;
+		isReceiving = false;
 	}
 
 	@Override
@@ -108,5 +121,88 @@ public class NetworkCloudlet extends Cloudlet implements Comparable<Object> {
 	public double getSubmittime() {
 		return submittime;
 	}
+	
+	public boolean getIsSending() {
+		return isSending;
+	}
+	
+	public boolean getIsReceiving() {
+		return isReceiving;
+	}
+	
+	public void setIsSending(boolean sending) {
+		isSending = sending;
+	}
+	
+	public void setIsReceiving(boolean receiving) {
+		isReceiving = receiving;
+	}
+	
+	/**
+     * Gets the utilization percentage of cpu.
+     *
+     * @param time the time
+     * @return the utilization of cpu
+     */
+	public double getUtilizationOfCpu(final double time) {
+		if (currStagenum < 0) {
+			return 0;
+		}
+		if (currStagenum < stages.size()) {
+			switch(stages.get(currStagenum).type) {
+			case NetworkConstants.EXECUTION:
+				break;
+			default:
+				return 0;
+				
+			}
+		}
+        return getUtilizationModelCpu().getUtilization(time);
+    }
+
+
+    /**
+     * Gets the utilization percentage of memory.
+     *
+     * @param time the time
+     * @return the utilization of memory
+     */
+    public double getUtilizationOfRam(final double time) {
+    	if (currStagenum < 0) {
+			return 0;
+		}
+    	if (currStagenum < stages.size()) {
+			switch(stages.get(currStagenum).type) {
+			case NetworkConstants.EXECUTION:
+				break;
+			default:
+				return 0;
+				
+			}
+		}
+        return getUtilizationModelRam().getUtilization(time);
+    }
+
+    /**
+     * Gets the utilization percentage of bw.
+     *
+     * @param time the time
+     * @return the utilization of bw
+     */
+    public double getUtilizationOfBw(final double time) {
+    	if (currStagenum < 0) {
+			return 0;
+		}
+    	System.out.println(getCloudletId());
+		System.out.println(CloudSim.clock());
+		System.out.println(isSending);
+		if (isSending || isReceiving) {
+			return getUtilizationModelBw().getUtilization(time);
+		}
+		else {
+			return 0;
+		}
+//        return getUtilizationModelBw().getUtilization(time);
+    }
 
 }

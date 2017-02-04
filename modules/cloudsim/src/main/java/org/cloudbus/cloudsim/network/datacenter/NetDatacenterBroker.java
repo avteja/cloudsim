@@ -23,6 +23,7 @@ import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 import org.cloudbus.cloudsim.distributions.UniformDistr;
+import org.cloudbus.cloudsim.lists.CloudletList;
 import org.cloudbus.cloudsim.lists.VmList;
 
 /**
@@ -94,6 +95,13 @@ public class NetDatacenterBroker extends SimEntity {
 	/** The datacenter characteristics map where each key 
          * is the datacenter id and each value is the datacenter itself. */
 	private Map<Integer, DatacenterCharacteristics> datacenterCharacteristicsList;
+	
+	/*
+	 * This map contains the user set cloud submit times for each cloudlet.
+	 */
+	protected Map<NetworkCloudlet, Double> cloudletSubmitTimeMap;
+	
+	protected Map<Vm, Double> vmCreateTimeMap;
 
 	public static NetworkDatacenter linkDC;
 
@@ -131,7 +139,8 @@ public class NetDatacenterBroker extends SimEntity {
 		setDatacenterRequestedIdsList(new ArrayList<Integer>());
 		setVmsToDatacentersMap(new HashMap<Integer, Integer>());
 		setDatacenterCharacteristicsList(new HashMap<Integer, DatacenterCharacteristics>());
-
+		setCloudletSubmitTimeMap(new HashMap<NetworkCloudlet, Double>());
+		setVmCreateTimeMap(new HashMap<Vm, Double>());
 	}
 
 	/**
@@ -162,6 +171,10 @@ public class NetDatacenterBroker extends SimEntity {
 	public static void setLinkDC(NetworkDatacenter alinkDC) {
 		linkDC = alinkDC;
 	}
+	
+	public void bindCloudletToVm(int cloudletId, int vmId) {
+		CloudletList.getById(getCloudletList(), cloudletId).setVmId(vmId);
+	}
 
 	/**
 	 * Processes events available for this Broker.
@@ -183,7 +196,9 @@ public class NetDatacenterBroker extends SimEntity {
 				processResourceCharacteristics(ev);
 				break;
 			// VM Creation answer
-
+			case CloudSimTags.VM_CREATE_ACK:
+				processVmCreate(ev);
+				break;
 			// A finished cloudlet returned
 			case CloudSimTags.CLOUDLET_RETURN:
 				processCloudletReturn(ev);
@@ -193,9 +208,10 @@ public class NetDatacenterBroker extends SimEntity {
 				shutdownEntity();
 				break;
 			case CloudSimTags.NextCycle:
-				if (NetworkConstants.BASE) {
-					createVmsInDatacenterBase(linkDC.getId());
-				}
+				//TODO-vinay: What is this even?
+//				if (NetworkConstants.BASE) {
+//					createVmsInDatacenterBase(linkDC.getId());
+//				}
 
 				break;
 			// other unknown tags are processed by this method
@@ -219,7 +235,9 @@ public class NetDatacenterBroker extends SimEntity {
 
 		if (getDatacenterCharacteristicsList().size() == getDatacenterIdsList().size()) {
 			setDatacenterRequestedIdsList(new ArrayList<Integer>());
-			createVmsInDatacenterBase(getDatacenterIdsList().get(0));
+			// TODO-vinay: Why is this being called? This should be part of example 
+//			createVmsInDatacenterBase(getDatacenterIdsList().get(0));
+			createVmsInDatacenter(getDatacenterIdsList().get(0));
 		}
 	}
 
@@ -252,6 +270,51 @@ public class NetDatacenterBroker extends SimEntity {
 	 * @pre ev != null
 	 * @post $none
 	 */
+	
+	protected void processVmCreate(SimEvent ev) {
+		int[] data = (int[]) ev.getData();
+		int datacenterId = data[0];
+		int vmId = data[1];
+		int result = data[2];
+		
+		if (result == CloudSimTags.TRUE) {
+			getVmsToDatacentersMap().put(vmId, datacenterId);
+			getVmsCreatedList().add(VmList.getById(getVmList(), vmId));
+			Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": VM #", vmId,
+					" has been created in Datacenter #", datacenterId, ", Host #",
+					VmList.getById(getVmsCreatedList(), vmId).getHost().getId());
+		} else {
+			Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Creation of VM #", vmId,
+					" failed in Datacenter #", datacenterId);
+		}
+		
+		incrementVmsAcks();
+		submitCloudlets();
+		// all the requested VMs have been created
+		if (getVmsCreatedList().size() == getVmList().size() - getVmsDestroyed()) {
+//			submitCloudlets();
+		} else {
+			// all the acks received, but some VMs were not created
+			if (getVmsRequested() == getVmsAcks()) {
+				// find id of the next datacenter that has not been tried
+				for (int nextDatacenterId : getDatacenterIdsList()) {
+					if (!getDatacenterRequestedIdsList().contains(nextDatacenterId)) {
+						createVmsInDatacenter(nextDatacenterId);
+						return;
+					}
+				}
+
+				// all datacenters already queried
+				if (getVmsCreatedList().size() > 0) { // if some vm were created
+					submitCloudlets();
+				} else { // no vms created. abort
+					Log.printLine(CloudSim.clock() + ": " + getName()
+							+ ": none of the required VMs could be created. Aborting");
+					finishExecution();
+				}
+			}
+		}
+	}
 
 	/**
 	 * Processes a cloudlet return event.
@@ -271,11 +334,14 @@ public class NetDatacenterBroker extends SimEntity {
 			clearDatacenters();
 			finishExecution();
 		} else { // some cloudlets haven't finished yet
+			
+			//TODO-vinay: if some cloudlets have not finished, why old vms should be created again?
+			
 			if (getAppCloudletList().size() > 0 && cloudletsSubmitted == 0) {
 				// all the cloudlets sent finished. It means that some bount
 				// cloudlet is waiting its VM be created
 				clearDatacenters();
-				createVmsInDatacenterBase(0);
+				createVmsInDatacenter(0);
 			}
 
 		}
@@ -322,7 +388,7 @@ public class NetDatacenterBroker extends SimEntity {
 		}
 
 		// generate Application execution Requests
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 1; i++) {
 			this.getAppCloudletList().add(
 					new WorkflowApp(AppCloudlet.APP_Workflow, NetworkConstants.currentAppId, 0, 0, getId()));
 			NetworkConstants.currentAppId++;
@@ -409,6 +475,87 @@ public class NetDatacenterBroker extends SimEntity {
 			getVmsCreatedList().add(VmList.getById(getVmList(), vmid));
 		}
 	}
+	
+	/**
+	 * Create the submitted virtual machines in a datacenter.
+	 * 
+	 * @param datacenterId Id of the chosen Datacenter
+	 * @pre $none
+	 * @post $none
+         * @see #submitVmList(java.util.List) 
+	 */
+	protected void createVmsInDatacenter(int datacenterId) {
+		// send as much vms as possible for this datacenter before trying the next one
+		int requestedVms = 0;
+		String datacenterName = CloudSim.getEntityName(datacenterId);
+		for (Vm vm : getVmList()) {
+			Double delay = vmCreateTimeMap.get(vm);
+ 			if (delay == null) {
+ 				delay = 0.0;
+			}
+			if (!getVmsToDatacentersMap().containsKey(vm.getId())) {
+				Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Create VM #" + vm.getId()
+						+ " in " + datacenterName);
+				send(datacenterId, delay, CloudSimTags.VM_CREATE_ACK, vm);
+				requestedVms++;
+			}
+		}
+
+		getDatacenterRequestedIdsList().add(datacenterId);
+
+		setVmsRequested(requestedVms);
+		setVmsAcks(0);
+	}
+	
+	/**
+	 * Submit cloudlets to the created VMs.
+	 * 
+	 * @pre $none
+	 * @post $none
+         * @see #submitCloudletList(java.util.List) 
+	 */
+	protected void submitCloudlets() {
+		int vmIndex = 0;
+		List<Cloudlet> successfullySubmitted = new ArrayList<Cloudlet>();
+		for (Cloudlet cloudlet : getCloudletList()) {
+			Vm vm;
+			// if user didn't bind this cloudlet and it has not been executed yet
+			if (cloudlet.getVmId() == -1) {
+				vm = getVmsCreatedList().get(vmIndex);
+			} else { // submit to the specific vm
+				vm = VmList.getById(getVmsCreatedList(), cloudlet.getVmId());
+				if (vm == null) { // vm was not created
+					if(!Log.isDisabled()) {				    
+					    Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Postponing execution of cloudlet ",
+							cloudlet.getCloudletId(), ": bount VM not available");
+					}
+					continue;
+				}
+			}
+
+			if (!Log.isDisabled()) {
+			    Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Sending cloudlet ",
+					cloudlet.getCloudletId(), " to VM #", vm.getId());
+			}
+			
+			cloudlet.setVmId(vm.getId());
+//			sendNow(getVmsToDatacentersMap().get(vm.getId()), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+			Double delay = cloudletSubmitTimeMap.get(cloudlet);
+			if (delay == null) {
+				sendNow(getVmsToDatacentersMap().get(vm.getId()), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+			} else {
+				send(getVmsToDatacentersMap().get(vm.getId()), delay, CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+			}
+			cloudletsSubmitted++;
+			vmIndex = (vmIndex + 1) % getVmsCreatedList().size();
+			getCloudletSubmittedList().add(cloudlet);
+			successfullySubmitted.add(cloudlet);
+		}
+
+		// remove submitted cloudlets from waiting list
+		getCloudletList().removeAll(successfullySubmitted);
+	}
+
 
 	/**
 	 * Sends request to destroy all VMs running on the datacenter.
@@ -695,6 +842,14 @@ public class NetDatacenterBroker extends SimEntity {
 	 */
 	protected void setDatacenterRequestedIdsList(List<Integer> datacenterRequestedIdsList) {
 		this.datacenterRequestedIdsList = datacenterRequestedIdsList;
+	}
+	
+	public void setCloudletSubmitTimeMap(Map<NetworkCloudlet, Double> cloudletSubmitTimeMap) {
+		this.cloudletSubmitTimeMap = cloudletSubmitTimeMap;
+	}
+	
+	public void setVmCreateTimeMap(Map<Vm, Double> vmCreateTimeMap) {
+		this.vmCreateTimeMap = vmCreateTimeMap;
 	}
 
 }

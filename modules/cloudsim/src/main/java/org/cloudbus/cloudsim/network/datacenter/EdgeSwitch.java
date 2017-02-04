@@ -136,7 +136,8 @@ public class EdgeSwitch extends Switch {
 						NetworkPacket hspkt = it.next();
 						// hspkt.recieverhostid=tosend;
 						// hs.packetrecieved.add(hspkt);
-						this.send(getId(), hspkt.pkt.data / avband, CloudSimTags.Network_Event_Host, hspkt);
+						// weird this was not 1000* when every other delay has 1000*
+						this.send(getId(), 1000*hspkt.pkt.data / avband, CloudSimTags.Network_Event_Host, hspkt);
 					}
 					hspktlist.clear();
 				}

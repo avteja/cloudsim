@@ -74,6 +74,13 @@ public class DatacenterBroker extends SimEntity {
 	/** The datacenter characteristics map where each key
          * is a datacenter id and each value is its characteristics.. */
 	protected Map<Integer, DatacenterCharacteristics> datacenterCharacteristicsList;
+	
+	/*
+	 * This map contains the user set cloud submit times for each cloudlet.
+	 */
+	protected Map<Cloudlet, Double> cloudletSubmitTimeMap;
+	
+	protected Map<Vm, Double> vmCreateTimeMap;
 
 	/**
 	 * Created a new DatacenterBroker object.
@@ -101,6 +108,8 @@ public class DatacenterBroker extends SimEntity {
 		setDatacenterRequestedIdsList(new ArrayList<Integer>());
 		setVmsToDatacentersMap(new HashMap<Integer, Integer>());
 		setDatacenterCharacteristicsList(new HashMap<Integer, DatacenterCharacteristics>());
+		setCloudletSubmitTimeMap(new HashMap<Cloudlet, Double>());
+		setVmCreateTimeMap(new HashMap<Vm, Double>());
 	}
 
 	/**
@@ -148,6 +157,7 @@ public class DatacenterBroker extends SimEntity {
 
 	@Override
 	public void processEvent(SimEvent ev) {
+		EventSummary.storePresentState(CloudSim.clock());
 		switch (ev.getTag()) {
 		// Resource characteristics request
 			case CloudSimTags.RESOURCE_CHARACTERISTICS_REQUEST:
@@ -224,7 +234,7 @@ public class DatacenterBroker extends SimEntity {
 		int datacenterId = data[0];
 		int vmId = data[1];
 		int result = data[2];
-
+		
 		if (result == CloudSimTags.TRUE) {
 			getVmsToDatacentersMap().put(vmId, datacenterId);
 			getVmsCreatedList().add(VmList.getById(getVmList(), vmId));
@@ -235,12 +245,12 @@ public class DatacenterBroker extends SimEntity {
 			Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Creation of VM #", vmId,
 					" failed in Datacenter #", datacenterId);
 		}
-
+		
 		incrementVmsAcks();
-
+		submitCloudlets();
 		// all the requested VMs have been created
 		if (getVmsCreatedList().size() == getVmList().size() - getVmsDestroyed()) {
-			submitCloudlets();
+//			submitCloudlets();
 		} else {
 			// all the acks received, but some VMs were not created
 			if (getVmsRequested() == getVmsAcks()) {
@@ -326,10 +336,14 @@ public class DatacenterBroker extends SimEntity {
 		int requestedVms = 0;
 		String datacenterName = CloudSim.getEntityName(datacenterId);
 		for (Vm vm : getVmList()) {
+			Double delay = vmCreateTimeMap.get(vm);
+			if (delay == null) {
+				delay = 0.0;
+			}
 			if (!getVmsToDatacentersMap().containsKey(vm.getId())) {
 				Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Create VM #" + vm.getId()
 						+ " in " + datacenterName);
-				sendNow(datacenterId, CloudSimTags.VM_CREATE_ACK, vm);
+				send(datacenterId, delay, CloudSimTags.VM_CREATE_ACK, vm);
 				requestedVms++;
 			}
 		}
@@ -372,7 +386,13 @@ public class DatacenterBroker extends SimEntity {
 			}
 			
 			cloudlet.setVmId(vm.getId());
-			sendNow(getVmsToDatacentersMap().get(vm.getId()), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+//			sendNow(getVmsToDatacentersMap().get(vm.getId()), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+			Double delay = cloudletSubmitTimeMap.get(cloudlet);
+			if (delay == null) {
+				sendNow(getVmsToDatacentersMap().get(vm.getId()), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+			} else {
+				send(getVmsToDatacentersMap().get(vm.getId()), delay, CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+			}
 			cloudletsSubmitted++;
 			vmIndex = (vmIndex + 1) % getVmsCreatedList().size();
 			getCloudletSubmittedList().add(cloudlet);
@@ -657,6 +677,14 @@ public class DatacenterBroker extends SimEntity {
 	 */
 	protected void setDatacenterRequestedIdsList(List<Integer> datacenterRequestedIdsList) {
 		this.datacenterRequestedIdsList = datacenterRequestedIdsList;
+	}
+	
+	public void setCloudletSubmitTimeMap(Map<Cloudlet, Double> cloudletSubmitTimeMap) {
+		this.cloudletSubmitTimeMap = cloudletSubmitTimeMap;
+	}
+	
+	public void setVmCreateTimeMap(Map<Vm, Double> vmCreateTimeMap) {
+		this.vmCreateTimeMap = vmCreateTimeMap;
 	}
 
 }
